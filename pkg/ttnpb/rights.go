@@ -73,6 +73,15 @@ func (r Right) Implied() *Rights {
 	return RightsFrom(r)
 }
 
+// PrettyName returns a user friendly form of the right
+func (r Right) PrettyName() string {
+	return strings.Replace(
+		strings.Title(
+			strings.ToLower(
+				strings.TrimPrefix(r.String(), "RIGHT_"))),
+		"_", " ", -1)
+}
+
 func makeRightsSet(rights ...*Rights) rightsSet {
 	s := make(rightsSet)
 	for _, r := range rights {
@@ -171,3 +180,11 @@ func (r *Rights) IncludesAll(search ...Right) bool {
 
 // RightsFrom returns a Rights message from a list of rights.
 func RightsFrom(rights ...Right) *Rights { return &Rights{Rights: rights} }
+
+// PrettyName returns the Name of the API key if it is specified, or the ID otherwise
+func (m *APIKey) PrettyName() string {
+	if name := m.GetName(); name != "" {
+		return name
+	}
+	return m.GetID()
+}
