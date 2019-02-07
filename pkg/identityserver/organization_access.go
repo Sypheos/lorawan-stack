@@ -129,7 +129,22 @@ func (is *IdentityServer) updateOrganizationAPIKey(ctx context.Context, req *ttn
 	key.Key = ""
 	if len(req.Rights) > 0 {
 		events.Publish(evtUpdateOrganizationAPIKey(ctx, req.OrganizationIdentifiers, nil))
-		// TODO: Send notification email (https://github.com/TheThingsNetwork/lorawan-stack/issues/72).
+		members := map[*ttnpb.OrganizationOrUserIdentifiers]*ttnpb.Rights{}
+		err = is.withDatabase(ctx, func(db *gorm.DB) (err error) {
+			members, err = store.GetMembershipStore(db).FindMembers(ctx, req.EntityIdentifiers())
+			return err
+		})
+		for member := range members {
+			if userIDs := member.GetUserIDs(); userIDs != nil {
+				err = is.SendUserEmail(ctx, userIDs, func(data emails.Data) email.MessageData {
+					data.SetEntity(req.EntityIdentifiers())
+					return &emails.APIKeyChanged{Data: data, Key: key}
+				})
+				if err != nil {
+					log.FromContext(ctx).WithError(err).Error("Could not send API key update notification email")
+				}
+			}
+		}
 	} else {
 		events.Publish(evtDeleteOrganizationAPIKey(ctx, req.OrganizationIdentifiers, nil))
 	}
