@@ -173,7 +173,22 @@ func (is *IdentityServer) setGatewayCollaborator(ctx context.Context, req *ttnpb
 	}
 	if len(req.Collaborator.Rights) > 0 {
 		events.Publish(evtUpdateGatewayCollaborator(ctx, req.GatewayIdentifiers, nil))
-		// TODO: Send notification email (https://github.com/TheThingsNetwork/lorawan-stack/issues/72).
+		members := map[*ttnpb.OrganizationOrUserIdentifiers]*ttnpb.Rights{}
+		err = is.withDatabase(ctx, func(db *gorm.DB) (err error) {
+			members, err = store.GetMembershipStore(db).FindMembers(ctx, req.EntityIdentifiers())
+			return err
+		})
+		for member := range members {
+			if userIDs := member.GetUserIDs(); userIDs != nil {
+				err = is.SendUserEmail(ctx, userIDs, func(data emails.Data) email.MessageData {
+					data.SetEntity(req.EntityIdentifiers())
+					return &emails.CollaboratorUpdated{Data: data, Collaborator: req.Collaborator}
+				})
+				if err != nil {
+					log.FromContext(ctx).WithError(err).Error("Could not send collaborator updated notification email")
+				}
+			}
+		}
 	} else {
 		events.Publish(evtDeleteGatewayCollaborator(ctx, req.GatewayIdentifiers, nil))
 	}
