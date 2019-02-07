@@ -20,8 +20,11 @@ import (
 	"github.com/gogo/protobuf/types"
 	"github.com/jinzhu/gorm"
 	"go.thethings.network/lorawan-stack/pkg/auth/rights"
+	"go.thethings.network/lorawan-stack/pkg/email"
 	"go.thethings.network/lorawan-stack/pkg/events"
+	"go.thethings.network/lorawan-stack/pkg/identityserver/emails"
 	"go.thethings.network/lorawan-stack/pkg/identityserver/store"
+	"go.thethings.network/lorawan-stack/pkg/log"
 	"go.thethings.network/lorawan-stack/pkg/ttnpb"
 	"go.thethings.network/lorawan-stack/pkg/unique"
 )
@@ -67,7 +70,22 @@ func (is *IdentityServer) createOrganizationAPIKey(ctx context.Context, req *ttn
 	}
 	key.Key = token
 	events.Publish(evtCreateOrganizationAPIKey(ctx, req.OrganizationIdentifiers, nil))
-	// TODO: Send notification email (https://github.com/TheThingsNetwork/lorawan-stack/issues/72).
+	members := map[*ttnpb.OrganizationOrUserIdentifiers]*ttnpb.Rights{}
+	err = is.withDatabase(ctx, func(db *gorm.DB) (err error) {
+		members, err = store.GetMembershipStore(db).FindMembers(ctx, req.EntityIdentifiers())
+		return err
+	})
+	for member := range members {
+		if userIDs := member.GetUserIDs(); userIDs != nil {
+			err = is.SendUserEmail(ctx, userIDs, func(data emails.Data) email.MessageData {
+				data.SetEntity(req.EntityIdentifiers())
+				return &emails.APIKeyCreated{Data: data, Key: key}
+			})
+			if err != nil {
+				log.FromContext(ctx).WithError(err).Error("Could not send API key creation notification email")
+			}
+		}
+	}
 	return key, nil
 }
 
