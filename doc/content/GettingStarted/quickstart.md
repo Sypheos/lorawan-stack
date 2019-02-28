@@ -1,3 +1,10 @@
+---
+title: "Quick Start"
+description: ""
+weight: 1
+draft: false
+--- 
+
 # Getting Started with The Things Network Stack for LoRaWAN
 
 ## Introduction
