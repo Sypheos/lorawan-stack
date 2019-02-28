@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Quick Start - LoRaWAN Stack</title>
+<meta name="generator" content="Hugo 0.54.0" />
+<link href="http://example.org/index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="http://example.org/gettingstarted/quickstart/">
+<link rel="stylesheet" href="http://example.org/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="http://example.org/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="http://example.org/js/functions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="http://example.org/js/jquery.backtothetop/jquery.backtothetop.min.js"></script></head>
+<body>
+<div class="container"><header>
+<h1>LoRaWAN Stack</h1>
+
+</header>
+
+<div class="content-container">
+<main><h1>Quick Start</h1>
+
+<h1 id="getting-started-with-the-things-network-stack-for-lorawan">Getting Started with The Things Network Stack for LoRaWAN</h1>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>This is a guide for setting up a private LoRaWAN network using The Things Network Stack for LoRaWAN V3 on a server. If you already have some knowledge about how the stack works and if you are comfortable with a command line, this is the perfect place to start.</p>
+
+<p>In this guide we will get everything up and running on a server using Docker.</p>
+
+<h2 id="table-of-contents">Table of Contents</h2>
+
+<ol>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#configuration">Configuration</a></li>
+<li><a href="#running">Running the stack</a></li>
+<li><a href="#login">Login using the CLI</a></li>
+<li><a href="#registergtw">Registering a gateway</a></li>
+<li><a href="#registerapp">Registering an application</a></li>
+<li><a href="#registerdev">Registering a device</a></li>
+<li><a href="#linkappserver">Linking the application</a></li>
+<li><a href="#mqtt">Using the MQTT broker</a></li>
+<li><a href="#webhooks">Using webhooks</a></li>
+</ol>
+
+<h2 id="a-name-dependencies-dependencies-a"><a name="dependencies">Dependencies</a></h2>
+
+<h3 id="cli-and-stack">CLI and Stack</h3>
+
+<p>For now, the web interface Console is not available; in this tutorial, we use the command-line interface (CLI) to manage the network.</p>
+
+<p>Get the latest packages or binaries for your operating system from the <a href="https://github.com/TheThingsNetwork/lorawan-stack/releases">releases</a> page on GitHub.</p>
+
+<h3 id="certificates">Certificates</h3>
+
+<p>By default, the Stack requires a <code>cert.pem</code> and <code>key.pem</code>, in order to to serve content over TLS.</p>
+
+<ul>
+<li>To generate self-signed certificates for <code>localhost</code>, use the following command. This requires a <a href="../DEVELOPMENT.md#development-environment">Go environment setup</a>.</li>
+</ul>
+
+<pre><code class="language-bash">go run $(go env GOROOT)/src/crypto/tls/generate_cert.go -ca -host localhost &amp;&amp; chmod 0444 ./key.pem
+</code></pre>
+
+<p>Keep in mind that self-signed certificates are not trusted by browsers and operating systems, resulting oftentimes in warnings and sometimes in errors. Consider <a href="https://letsencrypt.org/getting-started/">Let&rsquo;s Encrypt</a> for free and trusted TLS certificates for your server.</p>
+
+<h2 id="a-name-configuration-configuration-a"><a name="configuration">Configuration</a></h2>
+
+<p>The Stack can be started without passing any <a href="config.md">configuration</a>.</p>
+
+<p>You can refer to our <a href="networking.md">networking documentation</a> for the default endpoints of the Stack.</p>
+
+<h3 id="a-name-frequencyplans-frequency-plans-a"><a name="frequencyplans">Frequency plans</a></h3>
+
+<p>By default, frequency plans are fetched by the stack from the <a href="https://github.com/TheThingsNetwork/lorawan-frequency-plans"><code>TheThingsNetwork/lorawan-frequency-plans</code> repository</a>. To set a new source:</p>
+
+<ul>
+<li><p><code>TTN_LW_FREQUENCY_PLANS_URL</code> allows you to serve frequency plans fetched from a HTTP server.</p></li>
+
+<li><p><code>TTN_LW_FREQUENCY_PLANS_DIRECTORY</code> allows you to serve frequency plans from a local directory.</p></li>
+</ul>
+
+<h2 id="a-name-running-running-the-stack-a"><a name="running">Running the stack</a></h2>
+
+<p>You can run the stack using Docker or container orchestration solutions using Docker. An example <a href="../docker-compose.yml">Docker Compose configuration</a> is available in the repository.</p>
+
+<p>With the <code>docker-compose.yml</code> file in the directory of your terminal prompt, enter the following commands to initialize the database, create the first user <code>admin</code>, create the CLI OAuth client and start the stack:</p>
+
+<pre><code class="language-bash">$ docker-compose pull
+$ docker-compose run --rm stack is-db init
+$ docker-compose run --rm stack is-db create-admin-user --id admin --email admin@localhost
+$ docker-compose run --rm stack is-db create-oauth-client --id cli --name &quot;Command Line Interface&quot; --owner admin --no-secret --redirect-uri 'http://localhost:11885/oauth/callback' --redirect-uri '/oauth/code'
+$ docker-compose up
+</code></pre>
+
+<h2 id="a-name-login-login-using-the-cli-a"><a name="login">Login using the CLI</a></h2>
+
+<p>The CLI needs to be logged on in order to create gateways, applications, devices and API keys. With the stack running in one terminal session, login with the following command:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli login
+</code></pre>
+
+<p>A link will be provided to the OAuth login page where you can login using the credentials from the step ahead. Once you logged in in the browser, return to the terminal session to proceed.</p>
+
+<h2 id="a-name-registergtw-registering-a-gateway-a"><a name="registergtw">Registering a gateway</a></h2>
+
+<p>By default, the stack allows unregistered gateways to connect, but without providing a default band. As such, it is highly recommended that each gateway is registered:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli gateway create gtw1 --user-id admin --frequency-plan-id EU_863_870 --gateway-eui 00800000A00009EF --enforce-duty-cycle
+</code></pre>
+
+<p>This creates a gateway <code>gtw1</code> with the frequency plan <code>EU_863_870</code> and EUI <code>00800000A00009EF</code> that respects duty-cycle limitations. You can now connect your gateway to the stack.</p>
+
+<p>The frequency plan is fetched automatically from the <a href="#frequencyplans">configured source</a>.</p>
+
+<blockquote>
+<p>Note: if you need help with any command in <code>ttn-lw-cli</code>, use the <code>--help</code> flag to get a list of subcommands, flags and their description and aliases.</p>
+</blockquote>
+
+<h2 id="a-name-registerapp-registering-an-application-a"><a name="registerapp">Registering an application</a></h2>
+
+<p>In order to register a device, an application must be created first:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app create app1 --user-id admin
+</code></pre>
+
+<p>This creates an application <code>app1</code> for the user <code>admin</code>.</p>
+
+<h2 id="a-name-registerdev-registering-a-device-a"><a name="registerdev">Registering a device</a></h2>
+
+<p>You can now register an OTAA activated device to be used with the stack as follows:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli end-devices create app1 dev1 --dev-eui 0004A30B001C0530 --join-eui 800000000000000C --frequency-plan-id EU_863_870 --root-keys.app-key.key 752BAEC23EAE7964AF27C325F4C23C9A --lorawan-phy-version 1.0.2-b --lorawan-version 1.0.2
+</code></pre>
+
+<p>This will create an LoRaWAN 1.0.2 end device <code>dev1</code> with DevEUI <code>0004A30B001C0530</code>, AppEUI <code>800000000000000C</code> and AppKey <code>752BAEC23EAE7964AF27C325F4C23C9A</code>. After configuring the credentials in the end device, you should be able to join the private network.</p>
+
+<p>It is also possible to register an ABP activated device using the <code>--abp</code> flag as follows:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli end-devices create app1 dev1 --frequency-plan-id EU_863_870 --lorawan-phy-version 1.0.2-b --lorawan-version 1.0.2 --abp --session.dev-addr 00E4304D --session.keys.app-s-key.key A0CAD5A30036DBE03096EB67CA975BAA --session.keys.f_nwk_s_int_key.key B7F3E161BC9D4388E6C788A0C547F255
+</code></pre>
+
+<p>This will create an LoRaWAN 1.0.2 end device <code>dev1</code> with DevAddr <code>00E4304D</code>, AppSKey <code>A0CAD5A30036DBE03096EB67CA975BAA</code> and NwkSKey <code>B7F3E161BC9D4388E6C788A0C547F255</code>.</p>
+
+<h2 id="a-name-linkappserver-linking-the-application-a"><a name="linkappserver">Linking the application</a></h2>
+
+<p>In order to send uplinks and receive downlinks from your device, you must first link the application server to the network server. In order to do this, first create an API key for the application server:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app api-keys create --application-id app1 --right-application-link
+</code></pre>
+
+<p>The CLI will return an API key such as <code>NNSXS.VEEBURF3KR77ZR...</code>. This API key has only link rights and can therefore only be used during the linking process.</p>
+
+<p>You can now link the application server to the network server:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app link set app1 --api-key NNSXS.VEEBURF3KR77ZR..
+</code></pre>
+
+<p>Your application is now linked, and can use the built-in MQTT broker and webhooks support to receive uplink traffic and send downlink traffic.</p>
+
+<h2 id="a-name-mqtt-using-the-mqtt-broker-a"><a name="mqtt">Using the MQTT broker</a></h2>
+
+<p>In order to use the MQTT broker it is necessary to register a new API key that will be used during the authentication process:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app api-keys create --application-id app1 --right-application-traffic-down-write --right-application-traffic-read
+</code></pre>
+
+<p>Note that this new API key can both receive uplinks and schedule downlinks. You can now login using an MQTT client using the username <code>app1</code> (the application name) and the newly generated API key as password.</p>
+
+<p>There are many MQTT clients available; a simple one is <code>mosquitto_pub</code> and <code>mosquitto_sub</code>, part of <a href="https://mosquitto.org">Mosquitto</a>.</p>
+
+<h3 id="subscribing-to-messages">Subscribing to messages</h3>
+
+<p>MQTT topics provided by the built-in broker follow the format <code>v3/{application id}/devices/{device id}/{traffic type}</code>. While you could indeed subscribe for separate topics, for the purpose of this tutorial we will use the wildcard topic <code>#</code>, which provides all of the available messages of the application.</p>
+
+<p>After subscribing to <code>#</code> from your client, when a device of the application that is currently logged in joins the network, a <code>join</code> message will be published. For example, for a device called <code>dev-simulator</code>, the message will be published on the topic <code>v3/app1/devices/dev-simulator/join</code> with the following contents:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01DA1F15&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CT834K2YD17ZWZ6357HC0Z&quot;, &quot;ns:uplink:01D2CT834KNYD7BT2NHK5R1WVA&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CT834KJ4AVSD1SJ637NAV6&quot;, &quot;as:up:01D2CT83AXQFQYQ35SR74CTWKH&quot;],
+	&quot;join_accept&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZpAyXrAfEkUNkBljRoA==&quot;
+	}
+}
+</code></pre>
+
+<p>As you can see, with correlation IDs it will be possible to follow each message as it passes through the stack components, which can be handy while debugging.</p>
+
+<p>When the device sends an uplink, the message will be broadcasted to the topic <code>v3/app1/devices/dev-simulator/up</code> and will contain a payload formatted as follows:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01DA1F15&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CV8HF62ME0D7MZWE38HHH8&quot;, &quot;ns:uplink:01D2CV8HF6FYJHKZ45YY1DB3MR&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CV8HF6XR7ZFVK768PDG3J4&quot;, &quot;as:up:01D2CV8HNGJ57G25BW0FCZNY07&quot;],
+	&quot;uplink_message&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZpAyXrAfEkUNkBljRoA==&quot;,
+		&quot;f_port&quot;: 15,
+		&quot;frm_payload&quot;: &quot;VGVtcGVyYXR1cmUgPSAwLjA=&quot;,
+		&quot;rx_metadata&quot;: [{
+			&quot;gateway_ids&quot;: {
+				&quot;gateway_id&quot;: &quot;eui-0242020000247803&quot;,
+				&quot;eui&quot;: &quot;0242020000247803&quot;
+			},
+			&quot;time&quot;: &quot;2019-01-29T13:02:34.981Z&quot;,
+			&quot;timestamp&quot;: 1283325000,
+			&quot;rssi&quot;: -35,
+			&quot;snr&quot;: 5,
+			&quot;uplink_token&quot;: &quot;CiIKIAoUZXVpLTAyNDIwMjAwMDAyNDc4MDMSCAJCAgAAJHgDEMj49+ME&quot;
+		}],
+		&quot;settings&quot;: {
+			&quot;data_rate&quot;: {
+				&quot;lora&quot;: {
+					&quot;bandwidth&quot;: 125000,
+					&quot;spreading_factor&quot;: 7
+				}
+			},
+			&quot;data_rate_index&quot;: 5,
+			&quot;coding_rate&quot;: &quot;4/6&quot;,
+			&quot;frequency&quot;: &quot;868500000&quot;,
+			&quot;gateway_channel_index&quot;: 2,
+			&quot;device_channel_index&quot;: 2
+		}
+	}
+}
+</code></pre>
+
+<h3 id="scheduling-a-downlink-message">Scheduling a downlink message</h3>
+
+<h4 id="class-a-downlinks">Class A downlinks</h4>
+
+<p>Downlinks can be scheduled by publishing the message to the topic <code>v3/{application id}/devices/{device id}/down/push</code>. For example, if we want to send an unconfirmed downlink to the device <code>dev-simulator</code> with a payload of <code>BE EF</code> on port 15, we can use the topic <code>v3/app1/devices/dev-simulator/down/push</code> with the following contents:</p>
+
+<pre><code class="language-json">{
+	&quot;downlinks&quot;: [{
+		&quot;f_port&quot;: 15,
+		&quot;frm_payload&quot;: &quot;vu8=&quot;
+	}]
+}
+</code></pre>
+
+<p>The payload is base64 formatted, and it is possible to send multiple downlinks on a single push (since <code>downlinks</code> is an array). Instead of <code>push</code>, you can also use <code>replace</code> to replace the downlink queue.</p>
+
+<p>If we want to send a confirmed downlink to our device, we will use the same topic but add the <code>confirmed</code> flag to the downlink.</p>
+
+<pre><code class="language-json">{
+	&quot;downlinks&quot;: [{
+		&quot;f_port&quot;: 15,
+		&quot;frm_payload&quot;: &quot;vu8=&quot;,
+		&quot;confirmed&quot;: true
+	}]
+}
+</code></pre>
+
+<p>Once the downlink has been acknowledged, a message is published to the topic <code>v3/app1/devices/dev-simulator/down/ack</code>:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01DA1F15&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;as:conn:01D2CT5BZNX862RP9SV2JSRWZ7&quot;, &quot;as:downlink:01D2CVN6WW9S152ZVB0C7VHM4Z&quot;, &quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CVQP4ZW7BSFHFCCP8ECHY4&quot;, &quot;ns:uplink:01D2CVQP502TQ417XPWDZHKH41&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CVQP50QD90AJCH80N4KKYM&quot;, &quot;as:up:01D2CVQP51P18F6VGXZMG0EXGS&quot;],
+	&quot;downlink_ack&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZpAyXrAfEkUNkBljRoA==&quot;,
+		&quot;f_port&quot;: 15,
+		&quot;f_cnt&quot;: 8,
+		&quot;frm_payload&quot;: &quot;vu8=&quot;,
+		&quot;confirmed&quot;: true,
+		&quot;correlation_ids&quot;: [&quot;as:conn:01D2CT5BZNX862RP9SV2JSRWZ7&quot;, &quot;as:downlink:01D2CVN6WW9S152ZVB0C7VHM4Z&quot;]
+	}
+}
+</code></pre>
+
+<h4 id="class-c-downlinks">Class C downlinks</h4>
+
+<p>In order to schedule class C downlinks, the support for class C scheduling has to be enabled in the network server using the following command:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli end-devices set app1 dev1 --supports-class-c
+</code></pre>
+
+<p>This will enable the class C downlink scheduling of the device. It is assumed that devices with LoRaWAN versions earlier than 1.1 enable class C after the join procedure, while later devices use the <code>DeviceMode</code> MAC command to change their own class.</p>
+
+<p>No other changes are required in the format of the downlink message, since class C support is related to downlink scheduling.</p>
+
+<h4 id="class-c-multicast-downlinks">Class C multicast downlinks</h4>
+
+<p>Multicast downlinks are downlinks which are sent to a specific ABP session which is shared by multiple devices. Since the session is shared by multiple devices, the downlink will be received by all of them when it&rsquo;s transmitted by the gateway.</p>
+
+<p>Class C scheduling support is required in order to achieve this, and can be enabled using the command in the section above.</p>
+
+<p>Downlinks can be scheduled by adding the <code>class_bc</code> flag to the downlink message, which specifies on which gateway(s) the downlink should be scheduled.</p>
+
+<pre><code class="language-json">{
+    &quot;downlinks&quot;: [{
+        &quot;f_port&quot;: 15,
+        &quot;frm_payload&quot;: &quot;vu8=&quot;,
+        &quot;class_b_c&quot;: {
+            &quot;gateways&quot;: [{
+                &quot;gateway_ids&quot;: {
+                    &quot;gateway_id&quot;: &quot;gtw1&quot;
+                }
+            }]
+        }
+    }]
+}
+</code></pre>
+
+<h2 id="a-name-webhooks-using-webhooks-a"><a name="webhooks">Using webhooks</a></h2>
+
+<p>The webhooks feature allows the application server to send application related messages to specific HTTP(S) endpoints. Creating a webhook requires you to have an endpoint available as a message sink.</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app webhook set --application-id app1 --webhook-id wh1 --base-url https://example.com/lorahooks --join-accept.path &quot;join&quot; --format &quot;json&quot;
+</code></pre>
+
+<p>This will create an webhook <code>wh1</code> for the application <code>app1</code> with a base URL <code>https://example.com/lorahooks</code> and a join-accept path <code>join</code>. When a device of the application <code>app1</code> joins the network, the application server will do a <code>POST</code> request on the endpoint <code>https://example.com/lorahooks/join</code> with the following body:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01E9EF6A&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CWCK40JJFVY0J9KXQ2QQYP&quot;, &quot;ns:uplink:01D2CWCK41YNDZ16QX3MFY7YAT&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CWCK418QERZBCP7AXDGX4J&quot;, &quot;as:up:01D2CWCKAB5B148AHB0ED5MCQE&quot;],
+	&quot;join_accept&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZxkyDbxhYoP22ceb7SQ==&quot;
+	}
+}
+</code></pre>
+
+<p>You can later on subscribe for other messages, such as uplinks, using the following command:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app webhook set --application-id app1 --webhook-id wh1 --uplink-message.path &quot;up&quot;
+</code></pre>
+
+<p>Now when the device sends an uplink, the application server will do a <code>POST</code> request to <code>https://example.com/lorahooks/up</code> with the following body:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01E9EF6A&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CWX2MQBNBTE6M8TJ81K96K&quot;, &quot;ns:uplink:01D2CWX2MQGRMBDEN88KHV3S5Z&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CWX2MQFAV25GK9M6WB5DM7&quot;, &quot;as:up:01D2CWX2V1NBSBMDQYFFH4B2VR&quot;],
+	&quot;uplink_message&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZxkyDbxhYoP22ceb7SQ==&quot;,
+		&quot;f_port&quot;: 15,
+		&quot;frm_payload&quot;: &quot;VGVtcGVyYXR1cmUgPSAwLjA=&quot;,
+		&quot;rx_metadata&quot;: [{
+			&quot;gateway_ids&quot;: {
+				&quot;gateway_id&quot;: &quot;eui-0242020000247803&quot;,
+				&quot;eui&quot;: &quot;0242020000247803&quot;
+			},
+			&quot;time&quot;: &quot;2019-01-29T13:31:16.500Z&quot;,
+			&quot;timestamp&quot;: 3004844000,
+			&quot;rssi&quot;: -35,
+			&quot;snr&quot;: 5,
+			&quot;uplink_token&quot;: &quot;CiIKIAoUZXVpLTAyNDIwMjAwMDAyNDc4MDMSCAJCAgAAJHgDEOCP6ZgL&quot;
+		}],
+		&quot;settings&quot;: {
+			&quot;data_rate&quot;: {
+				&quot;lora&quot;: {
+					&quot;bandwidth&quot;: 125000,
+					&quot;spreading_factor&quot;: 7
+				}
+			},
+			&quot;data_rate_index&quot;: 5,
+			&quot;coding_rate&quot;: &quot;4/6&quot;,
+			&quot;frequency&quot;: &quot;868100000&quot;,
+			&quot;gateway_channel_index&quot;: 2
+		}
+	}
+}
+</code></pre>
+
+<h2 id="congratulations">Congratulations</h2>
+
+<p>You have now set up The Things Network Stack V3! 🎉</p>
+<div class="edit-meta">Last updated on February 28, 2019: commit/1834ce7be65a937eab2fe666890985c46e887c6a">move doc to docs (1834ce7b)
+<br></div><nav class="pagination"><a class="nav nav-prev" href="/gettingstarted/" title="GettingStarteds"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - GettingStarteds</a>
+
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main><div class="sidebar">
+<nav>
+<ul>
+<li class=""><a href="http://example.org/">Home</a></li>
+
+<li class="parent"><a href="/gettingstarted/">GettingStarteds</a>
+<ul class="sub-menu">
+<li class="active"><a href="/gettingstarted/quickstart/">Quick Start</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+<div class="sidebar-footer"></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>
