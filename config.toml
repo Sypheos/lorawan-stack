@@ -1,4 +1,4 @@
-baseURL = "http://example.org/"
+baseURL = "https://sypheos.github.io/lorawan-stack"
 languageCode = "en-us"
 title = "LoRaWAN Stack"
 theme = "hugo-theme-techdoc"
