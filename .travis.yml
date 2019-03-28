@@ -24,6 +24,9 @@ matrix:
   - if: tag IS present
     env: RUNTYPE=release
     os: linux
+  - if: branch = master
+    env: RUNTYPE=doc
+    os: linux
 services:
 - docker
 addons:
@@ -61,6 +64,10 @@ before_install:
                         -d
     sudo snap install snapcraft --classic
   fi
+- |
+  if [[ "$RUNTYPE" == "doc" ]]; then
+    sudo apt-get install hugo
+  fi
 install: true
 script:
 - |
@@ -92,6 +99,10 @@ script:
   if [[ "$RUNTYPE" == "release" ]]; then
     make deps
   fi
+- |
+  if [[ "$RUNTYPE" == "doc" ]]; then
+    make docs-gen
+  fi
 - make git.diff
 after_success:
 - |
@@ -110,3 +121,10 @@ deploy:
   on:
     tags: true
     condition: $RUNTYPE = "release"
+- provider: pages
+  local_dir: doc/public
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  keep_history: true
+  on:
+    branch: master
