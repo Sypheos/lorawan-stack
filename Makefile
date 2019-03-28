@@ -36,6 +36,15 @@ include .make/sdk/main.make
 messages:
 	@$(GO) run ./cmd/internal/generate_i18n.go
 
+docs-gen:
+	hugo -s ./doc --baseUrl https://github.com/TheThingsNetwork/lorawan-stack/$(GIT_TAG)/ -d public/$(GIT_TAG)
+
+docs-server:
+	hugo server -s ./doc
+
+doc-deps:
+	@echo https://gohugo.io/getting-started/installing
+
 docs:
 	@rm -f doc/ttn-lw-{stack,cli}/*.{md,1,yaml}
 	@$(GO) run ./cmd/ttn-lw-stack gen-man-pages --log.level=error -o doc/ttn-lw-stack
