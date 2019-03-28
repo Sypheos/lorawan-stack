@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Components on LoRaWAN Stack</title>
-    <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/components/</link>
+    <link>https://sypheos.github.io/lorawan-stack/v0.1/components/</link>
     <description>Recent content in Components on LoRaWAN Stack</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 27 Mar 2019 13:21:29 +0100</lastBuildDate>
     
-	<atom:link href="https://github.com/TheThingsNetwork/lorawan-stack/v0.1/components/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://sypheos.github.io/lorawan-stack/v0.1/components/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Gateway Server</title>
-      <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/components/gatewayserver/</link>
+      <link>https://sypheos.github.io/lorawan-stack/v0.1/components/gatewayserver/</link>
       <pubDate>Wed, 27 Mar 2019 13:21:29 +0100</pubDate>
       
-      <guid>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/components/gatewayserver/</guid>
+      <guid>https://sypheos.github.io/lorawan-stack/v0.1/components/gatewayserver/</guid>
       <description>Gateway Server The Gateway Server component of The Things Network Stack is responsible for the gateways that are connected to it. It includes roughly the same functionality as the Router component of our v2 network stack.
 Connectivity to Gateways Gateways can connect to Gateway Servers over multiple protocols.
 UDP protocol Gateways can connect to a Gateway Server over the UDP protocol. The EUI that is sent with every message is used to identify the gateway.</description>

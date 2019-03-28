@@ -2,31 +2,31 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Quick Start on LoRaWAN Stack</title>
-    <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/</link>
+    <link>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/</link>
     <description>Recent content in Quick Start on LoRaWAN Stack</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 27 Mar 2019 13:21:29 +0100</lastBuildDate>
     
-	<atom:link href="https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Installation</title>
-      <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/installation/</link>
+      <link>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/installation/</link>
       <pubDate>Wed, 27 Mar 2019 13:21:29 +0100</pubDate>
       
-      <guid>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/installation/</guid>
+      <guid>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/installation/</guid>
       <description>Docker Docker is available for most platforms, you can find most platform on its documentation website. If your platform isn&amp;rsquo;t listed, refer to your OS documentation. Note that Linux distributions are likely to provide docker through their package manager.
 Docker-compose Along docker you will need to have docker-compose. It will allow us to quickly run and configure our docker images. Instruction can also be found on the docker documentation website.</description>
     </item>
     
     <item>
       <title>Configure &amp; Start</title>
-      <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/start/</link>
+      <link>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/start/</link>
       <pubDate>Wed, 27 Mar 2019 13:21:29 +0100</pubDate>
       
-      <guid>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/start/</guid>
+      <guid>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/start/</guid>
       <description>Running the stack Download our Docker Compose configuration example. The stack can be run without any configuration, but for the purpose of this guide we provided you a basic one.
 With the docker-compose.yml file in the directory of your terminal prompt, enter the following commands to initialize the database, create the first user admin, create the CLI OAuth client and start the stack:
  Download the necessary images:
@@ -35,30 +35,30 @@ $ docker-compose pull    Initialize the stack:</description>
     
     <item>
       <title>Authenticate &amp; Manage</title>
-      <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/manage/</link>
+      <link>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/manage/</link>
       <pubDate>Wed, 27 Mar 2019 13:21:29 +0100</pubDate>
       
-      <guid>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/manage/</guid>
+      <guid>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/manage/</guid>
       <description>Login using the CLI The CLI needs to be logged on in order to create gateways, applications, devices and API keys. With the stack running in one terminal session, login with the following command:
 $ ttn-lw-cli login  A link will be provided to the OAuth login page where you can login using the credentials from the step ahead. Once you logged in in the browser, return to the terminal session to proceed.</description>
     </item>
     
     <item>
       <title>Device interaction</title>
-      <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/traffic/</link>
+      <link>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/traffic/</link>
       <pubDate>Wed, 27 Mar 2019 13:21:29 +0100</pubDate>
       
-      <guid>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/traffic/</guid>
+      <guid>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/traffic/</guid>
       <description>Using the MQTT broker In order to use the MQTT broker it is necessary to register a new API key that will be used during the authentication process:
 $ ttn-lw-cli app api-keys create --application-id app1 --right-application-traffic-down-write --right-application-traffic-read  Note that this new API key can both receive uplinks and schedule downlinks. You can now login using an MQTT client using the username app1 (the application name) and the newly generated API key as password.</description>
     </item>
     
     <item>
       <title>Integrate</title>
-      <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/integrate/</link>
+      <link>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/integrate/</link>
       <pubDate>Wed, 27 Mar 2019 13:21:29 +0100</pubDate>
       
-      <guid>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/gettingstarted/integrate/</guid>
+      <guid>https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/integrate/</guid>
       <description>Using webhooks The webhooks feature allows the application server to send application related messages to specific HTTP(S) endpoints. Creating a webhook requires you to have an endpoint available as a message sink.
 $ ttn-lw-cli app webhook set --application-id app1 --webhook-id wh1 --base-url https://example.com/lorahooks --join-accept.path &amp;quot;join&amp;quot; --format &amp;quot;json&amp;quot;  This will create an webhook wh1 for the application app1 with a base URL https://example.com/lorahooks and a join-accept path join. When a device of the application app1 joins the network, the application server will do a POST request on the endpoint https://example.</description>
     </item>

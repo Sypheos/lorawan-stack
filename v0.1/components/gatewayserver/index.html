@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Gateway Server - LoRaWAN Stack</title>
+<meta name="description" content="The best around">
+<meta name="generator" content="Hugo 0.54.0" />
+<link href="https://sypheos.github.io/lorawan-stack/v0.1/index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://sypheos.github.io/lorawan-stack/v0.1/components/gatewayserver/">
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/functions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/jquery.backtothetop/jquery.backtothetop.min.js"></script></head>
+<body>
+<div class="container"><header>
+<h1>LoRaWAN Stack</h1>
+
+ <span class="version">Version 3.0.0</span>
+<a href="https://github.com/TheThingsNetwork/lorawan-stack" class="github"><i class="fab fa-github"></i></a>
+<p class="description">The best around</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Gateway Server</h1>
+  
+
+
+<h1 id="gateway-server">Gateway Server</h1>
+
+<p>The <strong>Gateway Server</strong> component of The Things Network Stack is responsible for the gateways that are connected to it. It includes roughly the same functionality as the <strong>Router</strong> component of our v2 network stack.</p>
+
+<h2 id="connectivity-to-gateways">Connectivity to Gateways</h2>
+
+<p>Gateways can connect to Gateway Servers over multiple protocols.</p>
+
+<h4 id="udp-protocol">UDP protocol</h4>
+
+<p>Gateways can connect to a Gateway Server over <a href="https://github.com/Lora-net/packet_forwarder/blob/master/PROTOCOL.TXT">the UDP protocol</a>. The EUI that is sent with every message is used to identify the gateway.</p>
+
+<p>If a gateway is found in the Identity Server with this EUI, messages are correlated to this gateway. Otherwise, uplinks are still routed. However, the gateway will not send downlinks to this gateway, given that its regional parameters cannot be identified.</p>
+
+<p>Many packet forwarders implementing this protocol do not implement any queuing system for downlinks, resulting in packet loss since SX1301 concentrators cannot buffer multiple downlinks. The Things Network thus implements, for the UDP protocol, a delay to sent downlinks to gateway just before they&rsquo;re meant to be emitted by the concentrator. You can disable this feature individually per gateway, for example if the RTT between your gateway and the gateway server is too high.</p>
+
+<h4 id="grpc-protocol">gRPC protocol</h4>
+
+<p>Gateways can connect to a Gateway Server using <a href="../api/gatewayserver.proto">The Things Network&rsquo;s gRPC protocol</a>.</p>
+
+<h4 id="mqtt-protocol">MQTT protocol</h4>
+
+<p>Gateways can connect to a Gateway Server by exchanging <a href="../api/gatewayserver.proto">protobuf-encoded messages</a> over MQTT. This preserves the security and bandwidth usage features of the gRPC protocol, and is compatible with environments for which gRPC is not available.</p>
+
+<p>Clients should:</p>
+
+<ul>
+<li><p>Set the broker address to the gateway server&rsquo;s <a href="networking.md">MQTT endpoint</a>.</p></li>
+
+<li><p>Set the ID of the gateway as username, and an API key with the <code>GATEWAY_INFO</code> and <code>GATEWAY_LINK</code> rights as password.</p></li>
+
+<li><p>Use the <code>v3/&lt;gateway ID&gt;/up</code> topic to push uplinks, and the <code>v3/&lt;gateway ID&gt;/status</code> to push status messages.</p></li>
+
+<li><p>Subscribe to the <code>v3/&lt;gateway ID&gt;/down</code> topic to pull downlinks.</p></li>
+</ul>
+
+<h2 id="gateway-information">Gateway Information</h2>
+
+<p>While a gateway is connected, the Gateway Server collects statistics about the messages exchanged with the gateway, and about the status messages sent by the gateway. Those statistics can be retrieved using the <code>GetGatewayObservations</code> endpoint.</p>
+
+<h2 id="communication-with-network-server">Communication with Network Server</h2>
+
+<p>The main function of the Gateway Server is to establish a stable connection with gateways, and to serve as a relay between those gateways and the Network Servers.</p>
+
+<p>When routing an uplink, the Gateway Server decides which Network Server to send it to based on the <code>DevAddr</code> of the device. Join request are similarly routed based on the <code>DevEUI</code> of the device.</p>
+
+<p>The Gateway Server exchanges with Network Servers over gRPC. It claims identifiers of gateways using <code>ClaimIDs</code> and <code>UnclaimIDs</code> in the cluster, and sends uplinks using <code>HandleUplink</code>. It exposes an service with <code>ScheduleDownlink</code>, that the Network Server uses to send downlinks to gateways.</p>
+
+<h2 id="downlink-scheduling">Downlink Scheduling</h2>
+
+<p>The gateway server keeps track of all downlinks emitted and to be emitted by gateways connected. The network server can request the scheduling of a downlink with the <a href="../api/gatewayserver.proto"><code>ScheduleDownlink</code> method</a>, by attaching the <strong>timestamp</strong> at which a downlink should be sent. The gateway server does not decide which gateway sends a downlink, as this is decided by the network server.</p>
+
+<p>The following checks are being done by the gateway server before scheduling a downlink:</p>
+
+<ul>
+<li><p><strong>Downlink overlap</strong>: If the emission of a downlink overlaps the emission of another downlink, the downlink is dropped.</p></li>
+
+<li><p><strong>Time off air</strong>: Some frequency plans have time-off-air constraints, meaning a gateway must not emit for a certain period of time after emitting a downlink.</p></li>
+
+<li><p><strong>Duty cycle</strong>: Many countries have <strong>duty cycle restrictions</strong>, prohibiting a device for emitting for more than a certain percentage of time on a certain band. You can find more details in our <a href="https://www.thethingsnetwork.org/docs/lorawan/#eu-863-870-mhz-and-duty-cycle">official documentation</a>.</p></li>
+
+<li><p><strong>Dwell time</strong>: Some countries, such as the United States, are subject to <strong>dwell time regulations</strong> - meaning the duration of an transmission can&rsquo;t exceed a certain period.</p></li>
+</ul>
+<div class="edit-meta">Last updated on 27 Mar 2019 / Published on 1 Jan 0001<br><a href="https://github.com/TheThingsNetwork/lorawan-stack/doc/edit/master/content/Components/gatewayserver.md" class="edit-page"><i class="fas fa-pen-square"></i> Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="/lorawan-stack/v0.1/components/" title="Components"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Components</a>
+<a class="nav nav-next" href="/lorawan-stack/v0.1/concepts/" title="Concepts">Next - Concepts <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main><div class="sidebar">
+<nav>
+<ul>
+<li class=""><a href="https://sypheos.github.io/lorawan-stack/v0.1/">Home</a></li>
+
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/">Quick Start</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/installation/">Installation</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/start/">Configure &amp; Start</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/manage/">Authenticate &amp; Manage</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/traffic/">Device interaction</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/integrate/">Integrate</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/administration/">Administrations</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/administration/config/">Configuration</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/administration/networking/">Network</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="/lorawan-stack/v0.1/components/">Components</a>
+<ul class="sub-menu">
+<li class="active"><a href="/lorawan-stack/v0.1/components/gatewayserver/">Gateway Server</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/concepts/">Concepts</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/concepts/authentication/">Authentication</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+<div class="sidebar-footer"></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Configure &amp; Start - LoRaWAN Stack</title>
+<meta name="description" content="The best around">
+<meta name="generator" content="Hugo 0.54.0" />
+<link href="https://sypheos.github.io/lorawan-stack/v0.1/index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/start/">
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/functions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/jquery.backtothetop/jquery.backtothetop.min.js"></script></head>
+<body>
+<div class="container"><header>
+<h1>LoRaWAN Stack</h1>
+
+ <span class="version">Version 3.0.0</span>
+<a href="https://github.com/TheThingsNetwork/lorawan-stack" class="github"><i class="fab fa-github"></i></a>
+<p class="description">The best around</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Configure &amp; Start</h1>
+  
+
+
+<h2 id="a-name-running-running-the-stack-a"><a name="running">Running the stack</a></h2>
+
+<p>Download our <a href="../docker-compose.yml">Docker Compose configuration</a> example. The stack can be run without any configuration, but for the purpose of this guide
+we provided you a basic one.</p>
+
+<p>With the <code>docker-compose.yml</code> file in the directory of your terminal prompt, enter the following commands to initialize the database, create the first user <code>admin</code>, create the CLI OAuth client and start the stack:</p>
+
+<ul>
+<li><p>Download the necessary <code>images</code>:</p>
+
+<pre><code class="language-bash">$ docker-compose pull
+</code></pre>
+
+
+<script type="text/javascript" src="https://asciinema.org/a/6eF6gN7BMwETjwY3ABYEpuHWx.js" id="asciicast-6eF6gN7BMwETjwY3ABYEpuHWx" data-rows="10" async></script>
+</li>
+
+<li><p>Initialize the stack:</p>
+
+<pre><code class="language-bash">$ docker-compose run --rm stack is-db init
+</code></pre>
+
+
+<script type="text/javascript" src="https://asciinema.org/a/aoPjC2Xyt3d9LXN9oNyaQ2G1N.js" id="asciicast-aoPjC2Xyt3d9LXN9oNyaQ2G1N" data-rows="10" async></script>
+</li>
+
+<li><p>Create the admin account, use the password you want:</p>
+
+<pre><code class="language-bash">$ docker-compose run --rm stack is-db create-admin-user --id admin --email admin@localhost
+</code></pre>
+
+
+<script type="text/javascript" src="https://asciinema.org/a/aDA2v7lEQAn1N5BqCP357vizB.js" id="asciicast-aDA2v7lEQAn1N5BqCP357vizB" data-rows="10" async></script>
+</li>
+
+<li><p>Create the first oauth client:</p>
+
+<pre><code class="language-bash">$ docker-compose run --rm stack is-db create-oauth-client --id cli --name &quot;Command Line Interface&quot; --owner admin --no-secret --redirect-uri 'http://localhost:11885/oauth/callback' --redirect-uri '/oauth/code'
+</code></pre>
+
+
+<script type="text/javascript" src="https://asciinema.org/a/FKL9KFBiauFSWjl2M22P8V4UE.js" id="asciicast-FKL9KFBiauFSWjl2M22P8V4UE" data-rows="10" async></script>
+</li>
+
+<li><p>Start the stack:</p>
+
+<pre><code class="language-bash">$ docker-compose up -d
+</code></pre>
+
+
+<script type="text/javascript" src="https://asciinema.org/a/PxIst4QuC9dRhXFz0DoO1AtLF.js" id="asciicast-PxIst4QuC9dRhXFz0DoO1AtLF" data-rows="10" async></script>
+</li>
+</ul>
+<div class="edit-meta">Last updated on 27 Mar 2019 / Published on 1 Jan 0001<br><a href="https://github.com/TheThingsNetwork/lorawan-stack/doc/edit/master/content/GettingStarted/Start.md" class="edit-page"><i class="fas fa-pen-square"></i> Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="/lorawan-stack/v0.1/gettingstarted/installation/" title="Installation"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Installation</a>
+<a class="nav nav-next" href="/lorawan-stack/v0.1/gettingstarted/manage/" title="Authenticate &amp; Manage">Next - Authenticate &amp; Manage <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main><div class="sidebar">
+<nav>
+<ul>
+<li class=""><a href="https://sypheos.github.io/lorawan-stack/v0.1/">Home</a></li>
+
+<li class="parent"><a href="/lorawan-stack/v0.1/gettingstarted/">Quick Start</a>
+<ul class="sub-menu">
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/installation/">Installation</a></li>
+<li class="active"><a href="/lorawan-stack/v0.1/gettingstarted/start/">Configure &amp; Start</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/manage/">Authenticate &amp; Manage</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/traffic/">Device interaction</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/integrate/">Integrate</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/administration/">Administrations</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/administration/config/">Configuration</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/administration/networking/">Network</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/components/">Components</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/components/gatewayserver/">Gateway Server</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/concepts/">Concepts</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/concepts/authentication/">Authentication</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+<div class="sidebar-footer"></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Authenticate &amp; Manage - LoRaWAN Stack</title>
+<meta name="description" content="The best around">
+<meta name="generator" content="Hugo 0.54.0" />
+<link href="https://sypheos.github.io/lorawan-stack/v0.1/index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/manage/">
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/functions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/jquery.backtothetop/jquery.backtothetop.min.js"></script></head>
+<body>
+<div class="container"><header>
+<h1>LoRaWAN Stack</h1>
+
+ <span class="version">Version 3.0.0</span>
+<a href="https://github.com/TheThingsNetwork/lorawan-stack" class="github"><i class="fab fa-github"></i></a>
+<p class="description">The best around</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Authenticate &amp; Manage</h1>
+  
+
+
+<h2 id="a-name-login-login-using-the-cli-a"><a name="login">Login using the CLI</a></h2>
+
+<p>The CLI needs to be logged on in order to create gateways, applications, devices and API keys. With the stack running in one terminal session, login with the following command:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli login
+</code></pre>
+
+<p>A link will be provided to the OAuth login page where you can login using the credentials from the step ahead. Once you logged in in the browser, return to the terminal session to proceed.</p>
+
+<h2 id="a-name-registergtw-registering-a-gateway-a"><a name="registergtw">Registering a gateway</a></h2>
+
+<p>By default, the stack allows unregistered gateways to connect, but without providing a default band. As such, it is highly recommended that each gateway is registered:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli gateway create gtw1 --user-id admin --frequency-plan-id EU_863_870 --gateway-eui 00800000A00009EF --enforce-duty-cycle
+</code></pre>
+
+<p>This creates a gateway <code>gtw1</code> with the frequency plan <code>EU_863_870</code> and EUI <code>00800000A00009EF</code> that respects duty-cycle limitations. You can now connect your gateway to the stack.</p>
+
+<p>The frequency plan is fetched automatically from the <a href="#frequencyplans">configured source</a>.</p>
+
+<blockquote>
+<p>Note: if you need help with any command in <code>ttn-lw-cli</code>, use the <code>--help</code> flag to get a list of subcommands, flags and their description and aliases.</p>
+</blockquote>
+
+<h2 id="a-name-registerapp-registering-an-application-a"><a name="registerapp">Registering an application</a></h2>
+
+<p>In order to register a device, an application must be created first:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app create app1 --user-id admin
+</code></pre>
+
+<p>This creates an application <code>app1</code> for the user <code>admin</code>.</p>
+
+<h2 id="a-name-registerdev-registering-a-device-a"><a name="registerdev">Registering a device</a></h2>
+
+<p>You can now register an OTAA activated device to be used with the stack as follows:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli end-devices create app1 dev1 --dev-eui 0004A30B001C0530 --join-eui 800000000000000C --frequency-plan-id EU_863_870 --root-keys.app-key.key 752BAEC23EAE7964AF27C325F4C23C9A --lorawan-phy-version 1.0.2-b --lorawan-version 1.0.2
+</code></pre>
+
+<p>This will create an LoRaWAN 1.0.2 end device <code>dev1</code> with DevEUI <code>0004A30B001C0530</code>, AppEUI <code>800000000000000C</code> and AppKey <code>752BAEC23EAE7964AF27C325F4C23C9A</code>. After configuring the credentials in the end device, you should be able to join the private network.</p>
+
+<p>It is also possible to register an ABP activated device using the <code>--abp</code> flag as follows:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli end-devices create app1 dev1 --frequency-plan-id EU_863_870 --lorawan-phy-version 1.0.2-b --lorawan-version 1.0.2 --abp --session.dev-addr 00E4304D --session.keys.app-s-key.key A0CAD5A30036DBE03096EB67CA975BAA --session.keys.f_nwk_s_int_key.key B7F3E161BC9D4388E6C788A0C547F255
+</code></pre>
+
+<p>This will create an LoRaWAN 1.0.2 end device <code>dev1</code> with DevAddr <code>00E4304D</code>, AppSKey <code>A0CAD5A30036DBE03096EB67CA975BAA</code> and NwkSKey <code>B7F3E161BC9D4388E6C788A0C547F255</code>.</p>
+
+<h2 id="a-name-linkappserver-linking-the-application-a"><a name="linkappserver">Linking the application</a></h2>
+
+<p>In order to send uplinks and receive downlinks from your device, you must first link the application server to the network server. In order to do this, first create an API key for the application server:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app api-keys create --application-id app1 --right-application-link
+</code></pre>
+
+<p>The CLI will return an API key such as <code>NNSXS.VEEBURF3KR77ZR...</code>. This API key has only link rights and can therefore only be used during the linking process.</p>
+
+<p>You can now link the application server to the network server:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app link set app1 --api-key NNSXS.VEEBURF3KR77ZR..
+</code></pre>
+
+<p>Your application is now linked, and can use the built-in MQTT broker and webhooks support to receive uplink traffic and send downlink traffic.</p>
+<div class="edit-meta">Last updated on 27 Mar 2019 / Published on 1 Jan 0001<br><a href="https://github.com/TheThingsNetwork/lorawan-stack/doc/edit/master/content/GettingStarted/Manage.md" class="edit-page"><i class="fas fa-pen-square"></i> Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="/lorawan-stack/v0.1/gettingstarted/start/" title="Configure &amp; Start"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Configure &amp; Start</a>
+<a class="nav nav-next" href="/lorawan-stack/v0.1/gettingstarted/traffic/" title="Device interaction">Next - Device interaction <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main><div class="sidebar">
+<nav>
+<ul>
+<li class=""><a href="https://sypheos.github.io/lorawan-stack/v0.1/">Home</a></li>
+
+<li class="parent"><a href="/lorawan-stack/v0.1/gettingstarted/">Quick Start</a>
+<ul class="sub-menu">
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/installation/">Installation</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/start/">Configure &amp; Start</a></li>
+<li class="active"><a href="/lorawan-stack/v0.1/gettingstarted/manage/">Authenticate &amp; Manage</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/traffic/">Device interaction</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/integrate/">Integrate</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/administration/">Administrations</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/administration/config/">Configuration</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/administration/networking/">Network</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/components/">Components</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/components/gatewayserver/">Gateway Server</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/concepts/">Concepts</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/concepts/authentication/">Authentication</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+<div class="sidebar-footer"></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

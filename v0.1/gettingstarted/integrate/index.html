@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Integrate - LoRaWAN Stack</title>
+<meta name="description" content="Connect to the MQTT broker to receive and send message">
+<meta name="generator" content="Hugo 0.54.0" />
+<link href="https://sypheos.github.io/lorawan-stack/v0.1/index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/integrate/">
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/functions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/jquery.backtothetop/jquery.backtothetop.min.js"></script></head>
+<body>
+<div class="container"><header>
+<h1>LoRaWAN Stack</h1>
+
+ <span class="version">Version 3.0.0</span>
+<a href="https://github.com/TheThingsNetwork/lorawan-stack" class="github"><i class="fab fa-github"></i></a>
+<p class="description">The best around</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Integrate</h1>
+  
+
+
+<h2 id="a-name-webhooks-using-webhooks-a"><a name="webhooks">Using webhooks</a></h2>
+
+<p>The webhooks feature allows the application server to send application related messages to specific HTTP(S) endpoints. Creating a webhook requires you to have an endpoint available as a message sink.</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app webhook set --application-id app1 --webhook-id wh1 --base-url https://example.com/lorahooks --join-accept.path &quot;join&quot; --format &quot;json&quot;
+</code></pre>
+
+<p>This will create an webhook <code>wh1</code> for the application <code>app1</code> with a base URL <code>https://example.com/lorahooks</code> and a join-accept path <code>join</code>. When a device of the application <code>app1</code> joins the network, the application server will do a <code>POST</code> request on the endpoint <code>https://example.com/lorahooks/join</code> with the following body:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01E9EF6A&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CWCK40JJFVY0J9KXQ2QQYP&quot;, &quot;ns:uplink:01D2CWCK41YNDZ16QX3MFY7YAT&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CWCK418QERZBCP7AXDGX4J&quot;, &quot;as:up:01D2CWCKAB5B148AHB0ED5MCQE&quot;],
+	&quot;join_accept&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZxkyDbxhYoP22ceb7SQ==&quot;
+	}
+}
+</code></pre>
+
+<p>You can later on subscribe for other messages, such as uplinks, using the following command:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app webhook set --application-id app1 --webhook-id wh1 --uplink-message.path &quot;up&quot;
+</code></pre>
+
+<p>Now when the device sends an uplink, the application server will do a <code>POST</code> request to <code>https://example.com/lorahooks/up</code> with the following body:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01E9EF6A&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CWX2MQBNBTE6M8TJ81K96K&quot;, &quot;ns:uplink:01D2CWX2MQGRMBDEN88KHV3S5Z&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CWX2MQFAV25GK9M6WB5DM7&quot;, &quot;as:up:01D2CWX2V1NBSBMDQYFFH4B2VR&quot;],
+	&quot;uplink_message&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZxkyDbxhYoP22ceb7SQ==&quot;,
+		&quot;f_port&quot;: 15,
+		&quot;frm_payload&quot;: &quot;VGVtcGVyYXR1cmUgPSAwLjA=&quot;,
+		&quot;rx_metadata&quot;: [{
+			&quot;gateway_ids&quot;: {
+				&quot;gateway_id&quot;: &quot;eui-0242020000247803&quot;,
+				&quot;eui&quot;: &quot;0242020000247803&quot;
+			},
+			&quot;time&quot;: &quot;2019-01-29T13:31:16.500Z&quot;,
+			&quot;timestamp&quot;: 3004844000,
+			&quot;rssi&quot;: -35,
+			&quot;snr&quot;: 5,
+			&quot;uplink_token&quot;: &quot;CiIKIAoUZXVpLTAyNDIwMjAwMDAyNDc4MDMSCAJCAgAAJHgDEOCP6ZgL&quot;
+		}],
+		&quot;settings&quot;: {
+			&quot;data_rate&quot;: {
+				&quot;lora&quot;: {
+					&quot;bandwidth&quot;: 125000,
+					&quot;spreading_factor&quot;: 7
+				}
+			},
+			&quot;data_rate_index&quot;: 5,
+			&quot;coding_rate&quot;: &quot;4/6&quot;,
+			&quot;frequency&quot;: &quot;868100000&quot;,
+			&quot;gateway_channel_index&quot;: 2
+		}
+	}
+}
+</code></pre>
+
+<h2 id="congratulations">Congratulations</h2>
+
+<p>You have now set up The Things Network Stack V3! 🎉</p>
+<div class="edit-meta">Last updated on 27 Mar 2019 / Published on 1 Jan 0001<br><a href="https://github.com/TheThingsNetwork/lorawan-stack/doc/edit/master/content/GettingStarted/Integrate.md" class="edit-page"><i class="fas fa-pen-square"></i> Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="/lorawan-stack/v0.1/gettingstarted/traffic/" title="Device interaction"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Device interaction</a>
+<a class="nav nav-next" href="/lorawan-stack/v0.1/administration/" title="Administrations">Next - Administrations <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main><div class="sidebar">
+<nav>
+<ul>
+<li class=""><a href="https://sypheos.github.io/lorawan-stack/v0.1/">Home</a></li>
+
+<li class="parent"><a href="/lorawan-stack/v0.1/gettingstarted/">Quick Start</a>
+<ul class="sub-menu">
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/installation/">Installation</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/start/">Configure &amp; Start</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/manage/">Authenticate &amp; Manage</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/traffic/">Device interaction</a></li>
+<li class="active"><a href="/lorawan-stack/v0.1/gettingstarted/integrate/">Integrate</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/administration/">Administrations</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/administration/config/">Configuration</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/administration/networking/">Network</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/components/">Components</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/components/gatewayserver/">Gateway Server</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/concepts/">Concepts</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/concepts/authentication/">Authentication</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+<div class="sidebar-footer"></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

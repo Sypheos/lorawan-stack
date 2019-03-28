@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Device interaction - LoRaWAN Stack</title>
+<meta name="description" content="Connect to the MQTT broker to receive uplinks and send downlinks">
+<meta name="generator" content="Hugo 0.54.0" />
+<link href="https://sypheos.github.io/lorawan-stack/v0.1/index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://sypheos.github.io/lorawan-stack/v0.1/gettingstarted/traffic/">
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/functions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/jquery.backtothetop/jquery.backtothetop.min.js"></script></head>
+<body>
+<div class="container"><header>
+<h1>LoRaWAN Stack</h1>
+
+ <span class="version">Version 3.0.0</span>
+<a href="https://github.com/TheThingsNetwork/lorawan-stack" class="github"><i class="fab fa-github"></i></a>
+<p class="description">The best around</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Device interaction</h1>
+  
+
+
+<h2 id="a-name-mqtt-using-the-mqtt-broker-a"><a name="mqtt">Using the MQTT broker</a></h2>
+
+<p>In order to use the MQTT broker it is necessary to register a new API key that will be used during the authentication process:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli app api-keys create --application-id app1 --right-application-traffic-down-write --right-application-traffic-read
+</code></pre>
+
+<p>Note that this new API key can both receive uplinks and schedule downlinks.
+You can now login using an MQTT client using the username <code>app1</code> (the application name) and the newly generated API key as password.</p>
+
+<p>There are many MQTT clients available; a simple one is <code>mosquitto_pub</code> and <code>mosquitto_sub</code>, part of <a href="https://mosquitto.org">Mosquitto</a>.</p>
+
+<h3 id="subscribing-to-messages">Subscribing to messages</h3>
+
+<p>MQTT topics provided by the built-in broker follow the format <code>v3/{application id}/devices/{device id}/{traffic type}</code>. While you could indeed subscribe for separate topics, for the purpose of this tutorial we will use the wildcard topic <code>#</code>, which provides all of the available messages of the application.</p>
+
+<p>After subscribing to <code>#</code> from your client, when a device of the application that is currently logged in joins the network, a <code>join</code> message will be published. For example, for a device called <code>dev-simulator</code>, the message will be published on the topic <code>v3/app1/devices/dev-simulator/join</code> with the following contents:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01DA1F15&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CT834K2YD17ZWZ6357HC0Z&quot;, &quot;ns:uplink:01D2CT834KNYD7BT2NHK5R1WVA&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CT834KJ4AVSD1SJ637NAV6&quot;, &quot;as:up:01D2CT83AXQFQYQ35SR74CTWKH&quot;],
+	&quot;join_accept&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZpAyXrAfEkUNkBljRoA==&quot;
+	}
+}
+</code></pre>
+
+<p>As you can see, with correlation IDs it will be possible to follow each message as it passes through the stack components, which can be handy while debugging.</p>
+
+<p>When the device sends an uplink, the message will be broadcasted to the topic <code>v3/app1/devices/dev-simulator/up</code> and will contain a payload formatted as follows:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01DA1F15&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CV8HF62ME0D7MZWE38HHH8&quot;, &quot;ns:uplink:01D2CV8HF6FYJHKZ45YY1DB3MR&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CV8HF6XR7ZFVK768PDG3J4&quot;, &quot;as:up:01D2CV8HNGJ57G25BW0FCZNY07&quot;],
+	&quot;uplink_message&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZpAyXrAfEkUNkBljRoA==&quot;,
+		&quot;f_port&quot;: 15,
+		&quot;frm_payload&quot;: &quot;VGVtcGVyYXR1cmUgPSAwLjA=&quot;,
+		&quot;rx_metadata&quot;: [{
+			&quot;gateway_ids&quot;: {
+				&quot;gateway_id&quot;: &quot;eui-0242020000247803&quot;,
+				&quot;eui&quot;: &quot;0242020000247803&quot;
+			},
+			&quot;time&quot;: &quot;2019-01-29T13:02:34.981Z&quot;,
+			&quot;timestamp&quot;: 1283325000,
+			&quot;rssi&quot;: -35,
+			&quot;snr&quot;: 5,
+			&quot;uplink_token&quot;: &quot;CiIKIAoUZXVpLTAyNDIwMjAwMDAyNDc4MDMSCAJCAgAAJHgDEMj49+ME&quot;
+		}],
+		&quot;settings&quot;: {
+			&quot;data_rate&quot;: {
+				&quot;lora&quot;: {
+					&quot;bandwidth&quot;: 125000,
+					&quot;spreading_factor&quot;: 7
+				}
+			},
+			&quot;data_rate_index&quot;: 5,
+			&quot;coding_rate&quot;: &quot;4/6&quot;,
+			&quot;frequency&quot;: &quot;868500000&quot;,
+			&quot;gateway_channel_index&quot;: 2,
+			&quot;device_channel_index&quot;: 2
+		}
+	}
+}
+</code></pre>
+
+<h3 id="scheduling-a-downlink-message">Scheduling a downlink message</h3>
+
+<h4 id="class-a-downlinks">Class A downlinks</h4>
+
+<p>Downlinks can be scheduled by publishing the message to the topic <code>v3/{application id}/devices/{device id}/down/push</code>. For example, if we want to send an unconfirmed downlink to the device <code>dev-simulator</code> with a payload of <code>BE EF</code> on port 15, we can use the topic <code>v3/app1/devices/dev-simulator/down/push</code> with the following contents:</p>
+
+<pre><code class="language-json">{
+	&quot;downlinks&quot;: [{
+		&quot;f_port&quot;: 15,
+		&quot;frm_payload&quot;: &quot;vu8=&quot;
+	}]
+}
+</code></pre>
+
+<p>The payload is base64 formatted, and it is possible to send multiple downlinks on a single push (since <code>downlinks</code> is an array). Instead of <code>push</code>, you can also use <code>replace</code> to replace the downlink queue.</p>
+
+<p>If we want to send a confirmed downlink to our device, we will use the same topic but add the <code>confirmed</code> flag to the downlink.</p>
+
+<pre><code class="language-json">{
+	&quot;downlinks&quot;: [{
+		&quot;f_port&quot;: 15,
+		&quot;frm_payload&quot;: &quot;vu8=&quot;,
+		&quot;confirmed&quot;: true
+	}]
+}
+</code></pre>
+
+<p>Once the downlink has been acknowledged, a message is published to the topic <code>v3/app1/devices/dev-simulator/down/ack</code>:</p>
+
+<pre><code class="language-json">{
+	&quot;end_device_ids&quot;: {
+		&quot;device_id&quot;: &quot;dev-simulator&quot;,
+		&quot;application_ids&quot;: {
+			&quot;application_id&quot;: &quot;app1&quot;
+		},
+		&quot;dev_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;join_eui&quot;: &quot;4200000000000000&quot;,
+		&quot;dev_addr&quot;: &quot;01DA1F15&quot;
+	},
+	&quot;correlation_ids&quot;: [&quot;as:conn:01D2CT5BZNX862RP9SV2JSRWZ7&quot;, &quot;as:downlink:01D2CVN6WW9S152ZVB0C7VHM4Z&quot;, &quot;gs:conn:01D2CSNX7FJVKQPCVG612QF1TX&quot;, &quot;gs:uplink:01D2CVQP4ZW7BSFHFCCP8ECHY4&quot;, &quot;ns:uplink:01D2CVQP502TQ417XPWDZHKH41&quot;, &quot;rpc:/ttn.lorawan.v3.GsNs/HandleUplink:01D2CVQP50QD90AJCH80N4KKYM&quot;, &quot;as:up:01D2CVQP51P18F6VGXZMG0EXGS&quot;],
+	&quot;downlink_ack&quot;: {
+		&quot;session_key_id&quot;: &quot;AWiZpAyXrAfEkUNkBljRoA==&quot;,
+		&quot;f_port&quot;: 15,
+		&quot;f_cnt&quot;: 8,
+		&quot;frm_payload&quot;: &quot;vu8=&quot;,
+		&quot;confirmed&quot;: true,
+		&quot;correlation_ids&quot;: [&quot;as:conn:01D2CT5BZNX862RP9SV2JSRWZ7&quot;, &quot;as:downlink:01D2CVN6WW9S152ZVB0C7VHM4Z&quot;]
+	}
+}
+</code></pre>
+
+<h4 id="class-c-downlinks">Class C downlinks</h4>
+
+<p>In order to schedule class C downlinks, the support for class C scheduling has to be enabled in the network server using the following command:</p>
+
+<pre><code class="language-bash">$ ttn-lw-cli end-devices set app1 dev1 --supports-class-c
+</code></pre>
+
+<p>This will enable the class C downlink scheduling of the device. It is assumed that devices with LoRaWAN versions earlier than 1.1 enable class C after the join procedure, while later devices use the <code>DeviceMode</code> MAC command to change their own class.</p>
+
+<p>No other changes are required in the format of the downlink message, since class C support is related to downlink scheduling.</p>
+
+<h4 id="class-c-multicast-downlinks">Class C multicast downlinks</h4>
+
+<p>Multicast downlinks are downlinks which are sent to a specific ABP session which is shared by multiple devices. Since the session is shared by multiple devices, the downlink will be received by all of them when it&rsquo;s transmitted by the gateway.</p>
+
+<p>Class C scheduling support is required in order to achieve this, and can be enabled using the command in the section above.</p>
+
+<p>Downlinks can be scheduled by adding the <code>class_bc</code> flag to the downlink message, which specifies on which gateway(s) the downlink should be scheduled.</p>
+
+<pre><code class="language-json">{
+    &quot;downlinks&quot;: [{
+        &quot;f_port&quot;: 15,
+        &quot;frm_payload&quot;: &quot;vu8=&quot;,
+        &quot;class_b_c&quot;: {
+            &quot;gateways&quot;: [{
+                &quot;gateway_ids&quot;: {
+                    &quot;gateway_id&quot;: &quot;gtw1&quot;
+                }
+            }]
+        }
+    }]
+}
+</code></pre>
+<div class="edit-meta">Last updated on 27 Mar 2019 / Published on 1 Jan 0001<br><a href="https://github.com/TheThingsNetwork/lorawan-stack/doc/edit/master/content/GettingStarted/Traffic.md" class="edit-page"><i class="fas fa-pen-square"></i> Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="/lorawan-stack/v0.1/gettingstarted/manage/" title="Authenticate &amp; Manage"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Authenticate &amp; Manage</a>
+<a class="nav nav-next" href="/lorawan-stack/v0.1/gettingstarted/integrate/" title="Integrate">Next - Integrate <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main><div class="sidebar">
+<nav>
+<ul>
+<li class=""><a href="https://sypheos.github.io/lorawan-stack/v0.1/">Home</a></li>
+
+<li class="parent"><a href="/lorawan-stack/v0.1/gettingstarted/">Quick Start</a>
+<ul class="sub-menu">
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/installation/">Installation</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/start/">Configure &amp; Start</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/manage/">Authenticate &amp; Manage</a></li>
+<li class="active"><a href="/lorawan-stack/v0.1/gettingstarted/traffic/">Device interaction</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/integrate/">Integrate</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/administration/">Administrations</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/administration/config/">Configuration</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/administration/networking/">Network</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/components/">Components</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/components/gatewayserver/">Gateway Server</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/concepts/">Concepts</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/concepts/authentication/">Authentication</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+<div class="sidebar-footer"></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

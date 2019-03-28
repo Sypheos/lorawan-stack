@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Concepts on LoRaWAN Stack</title>
-    <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/concepts/</link>
+    <link>https://sypheos.github.io/lorawan-stack/v0.1/concepts/</link>
     <description>Recent content in Concepts on LoRaWAN Stack</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 27 Mar 2019 13:21:29 +0100</lastBuildDate>
     
-	<atom:link href="https://github.com/TheThingsNetwork/lorawan-stack/v0.1/concepts/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://sypheos.github.io/lorawan-stack/v0.1/concepts/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Authentication</title>
-      <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/concepts/authentication/</link>
+      <link>https://sypheos.github.io/lorawan-stack/v0.1/concepts/authentication/</link>
       <pubDate>Wed, 27 Mar 2019 13:21:29 +0100</pubDate>
       
-      <guid>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/concepts/authentication/</guid>
+      <guid>https://sypheos.github.io/lorawan-stack/v0.1/concepts/authentication/</guid>
       <description>API calls can be authorized either by providing an API key or an OAuth access token.
  Usage with HTTP Authorization Header: Bearer XXXXX Usage with gRPC call credentials (in the authorization header): Bearer XXXXX Usage with MQTT: Username: Gateway ID or Application ID, Password: XXXXX  Here, XXXXX is either a valid API key or a valid OAuth access token.
 API keys API keys are the simplest way of authorization.</description>

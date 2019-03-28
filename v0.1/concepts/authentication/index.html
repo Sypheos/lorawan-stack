@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Authentication - LoRaWAN Stack</title>
+<meta name="description" content="The best around">
+<meta name="generator" content="Hugo 0.54.0" />
+<link href="https://sypheos.github.io/lorawan-stack/v0.1/index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://sypheos.github.io/lorawan-stack/v0.1/concepts/authentication/">
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/functions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/jquery.backtothetop/jquery.backtothetop.min.js"></script></head>
+<body>
+<div class="container"><header>
+<h1>LoRaWAN Stack</h1>
+
+ <span class="version">Version 3.0.0</span>
+<a href="https://github.com/TheThingsNetwork/lorawan-stack" class="github"><i class="fab fa-github"></i></a>
+<p class="description">The best around</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Authentication</h1>
+  
+
+
+<p>API calls can be authorized either by providing an <strong>API key</strong> or an <strong>OAuth access token</strong>.</p>
+
+<ul>
+<li>Usage with HTTP <code>Authorization</code> Header: <code>Bearer XXXXX</code></li>
+<li>Usage with gRPC <a href="https://grpc.io/docs/guides/auth.html#authentication-api">call credentials</a> (in the <code>authorization</code> header): <code>Bearer XXXXX</code></li>
+<li>Usage with MQTT: Username: Gateway ID or Application ID, Password: <code>XXXXX</code></li>
+</ul>
+
+<p>Here, <code>XXXXX</code> is either a valid <strong>API key</strong> or a valid <strong>OAuth access token</strong>.</p>
+
+<h2 id="api-keys">API keys</h2>
+
+<p>API keys are the simplest way of authorization. API keys do not expire, are revokable, and they are scoped to the entity they were generated from:</p>
+
+<ul>
+<li>User API keys</li>
+<li>Application API keys</li>
+<li>Gateway API keys</li>
+<li>Organization API keys</li>
+</ul>
+
+<h2 id="oauth-access-tokens">OAuth access tokens</h2>
+
+<p>The Things Network uses the <a href="https://oauth.net/">OAuth 2.0 protocol</a> for authentication and authorization.</p>
+
+<p>To use this method, you first need an <strong>OAuth client registration</strong>:</p>
+
+<ul>
+<li>The <strong>client ID</strong> uniquely identifies the OAuth client. Its restrictions are the same as for any other ID in TTN.</li>
+<li>The <strong>description</strong> is shown to the user when you request authorization.</li>
+<li>The <strong>scope</strong> indicates what actions your OAuth client is allowed to perform. This is shown to the user when you request authorization. You can select the actions your OAuth client needs on registration, a full list can also be found in our <a href="https://github.com/TheThingsNetwork/lorawan-stack/blob/master/api/rights.proto">source code</a>.</li>
+<li>The <strong>redirect URI</strong> is where the user is redirected after authorizing your OAuth client.</li>
+<li>The <strong>client secret</strong> is issued when your OAuth client Registration is accepted by a network admin.</li>
+</ul>
+
+<p>After your OAuth client Registration is accepted, you can <strong>request authorization</strong> by sending the user to the <strong>authorization URL</strong>:</p>
+
+<pre><code>https://&lt;HOSTNAME&gt;/oauth/authorize?client_id=&lt;CLIENT-ID&gt;&amp;redirect_uri=&lt;REDIRECT-URI&gt;&amp;state=&lt;STATE&gt;&amp;response_type=code
+</code></pre>
+
+<ul>
+<li>The <code>HOSTNAME</code> is the hostname of the Identity Server.</li>
+<li>The <code>client_id</code> is the <strong>client ID</strong> of your OAuth client.</li>
+<li>The <code>response_type</code> is always <code>code</code>.</li>
+<li>The <code>redirect_uri</code> must exactly match the <strong>redirect URI</strong> of your OAuth client registration if supplied.
+
+<ul>
+<li>We allow multiple <strong>redirect URIs</strong> in your OAuth client registration in the future, in which case the <code>REDIRECT-URI</code> must exactly match one of those.</li>
+</ul></li>
+<li>The optional <code>scope</code> is ignored by the Identity Server. All scopes defined in your OAuth client registration will be requested.</li>
+<li>The optional <code>state</code> can be used to mitigate CSRF attacks. It is recommended to supply this.</li>
+</ul>
+
+<p>The Identity Server will prompt the user with a view asking to authorize your OAuth client. They will see the <strong>client ID</strong>, <strong>description</strong>, requested <strong>scope</strong> and <strong>redirect URI</strong>. If they accept the authorization, they will be redirected to your <strong>redirect URI</strong> with an <strong>authorization code</strong>:</p>
+
+<pre><code>https://&lt;REDIRECT-URI&gt;/?code=&lt;AUTHORIZATION-CODE&gt;
+</code></pre>
+
+<p>Your OAuth client can exchange this <strong>authorization code</strong> for an <strong>OAuth access token</strong> by making a <code>POST</code> request to the <strong>token URL</strong>:</p>
+
+<pre><code>https://&lt;HOSTNAME&gt;/oauth/token
+</code></pre>
+
+<p>The request must use <strong>Basic Auth</strong> (<a href="https://tools.ietf.org/html/rfc7617">RFC7617</a>) with the <strong>client ID</strong> as username and the <strong>client secret</strong> as password.</p>
+
+<p>The <strong>authorization code</strong> is sent in the request payload:</p>
+
+<pre><code>{
+	&quot;code&quot;: &quot;&lt;AUTHORIZATION-CODE&gt;&quot;, 
+	&quot;grant_type&quot;: &quot;authorization_code&quot;
+}
+</code></pre>
+
+<p>The response contains the <strong>OAuth access token</strong> and an indication of when it expires. If the network admin gave your OAuth client the <strong>refresh token</strong> grant, the response also contains a <strong>refresh token</strong>.</p>
+
+<pre><code>{
+	&quot;access_token&quot;: &quot;XXXXX&quot;, 
+	&quot;token_type&quot;: &quot;bearer&quot;, 
+	&quot;expires_in&quot;: &quot;3600&quot;,
+	&quot;refresh_token&quot;: &quot;YYYYY&quot;
+}
+</code></pre>
+
+<p>You can now use the <strong>OAuth access token</strong> until it expires.</p>
+
+<p>If you have a <strong>refresh token</strong>, you can exchange this for a new <strong>OAuth access token</strong> after the old one expires by making another <code>POST</code> request to the <strong>token URL</strong>, similar to the exchange of the <strong>authorization code</strong> you did before:</p>
+
+<pre><code>https://&lt;HOSTNAME&gt;/oauth/token
+</code></pre>
+
+<p>The request must use <strong>Basic Auth</strong> (<a href="https://tools.ietf.org/html/rfc7617">RFC7617</a>) with the <strong>client ID</strong> as username and the <strong>client secret</strong> as password.</p>
+
+<p>The <strong>refresh token</strong> is sent in the request payload:</p>
+
+<pre><code>{
+	&quot;code&quot;: &quot;&lt;REFRESH-TOKEN&gt;&quot;, 
+	&quot;grant_type&quot;: &quot;refresh_token&quot;
+}
+</code></pre>
+
+<p>The response again contains the <strong>OAuth access token</strong> and an indication of when it expires. The response also contains a new <strong>refresh token</strong>.</p>
+
+<pre><code>{
+	&quot;access_token&quot;: &quot;XXXXX&quot;, 
+	&quot;token_type&quot;: &quot;bearer&quot;, 
+	&quot;expires_in&quot;: &quot;3600&quot;,
+	&quot;refresh_token&quot;: &quot;YYYYY&quot;
+}
+</code></pre>
+<div class="edit-meta">Last updated on 27 Mar 2019 / Published on 1 Jan 0001<br><a href="https://github.com/TheThingsNetwork/lorawan-stack/doc/edit/master/content/Concepts/authentication.md" class="edit-page"><i class="fas fa-pen-square"></i> Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="/lorawan-stack/v0.1/concepts/" title="Concepts"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Concepts</a>
+<a class="nav nav-next" href="/lorawan-stack/v0.1/gettingstarted/" title="Quick Start">Next - Quick Start <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main><div class="sidebar">
+<nav>
+<ul>
+<li class=""><a href="https://sypheos.github.io/lorawan-stack/v0.1/">Home</a></li>
+
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/">Quick Start</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/installation/">Installation</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/start/">Configure &amp; Start</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/manage/">Authenticate &amp; Manage</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/traffic/">Device interaction</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/integrate/">Integrate</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/administration/">Administrations</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/administration/config/">Configuration</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/administration/networking/">Network</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/components/">Components</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/components/gatewayserver/">Gateway Server</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="/lorawan-stack/v0.1/concepts/">Concepts</a>
+<ul class="sub-menu">
+<li class="active"><a href="/lorawan-stack/v0.1/concepts/authentication/">Authentication</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+<div class="sidebar-footer"></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Configuration - LoRaWAN Stack</title>
+<meta name="description" content="The best around">
+<meta name="generator" content="Hugo 0.54.0" />
+<link href="https://sypheos.github.io/lorawan-stack/v0.1/index.xml" rel="alternate" type="application/rss+xml">
+<link rel="canonical" href="https://sypheos.github.io/lorawan-stack/v0.1/administration/config/">
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/theme.min.css">
+<script src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+<link rel="stylesheet" href="https://sypheos.github.io/lorawan-stack/v0.1/css/chroma.min.css">
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/functions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery.easing@1.4.1/jquery.easing.min.js"></script>
+<script src="https://sypheos.github.io/lorawan-stack/v0.1/js/jquery.backtothetop/jquery.backtothetop.min.js"></script></head>
+<body>
+<div class="container"><header>
+<h1>LoRaWAN Stack</h1>
+
+ <span class="version">Version 3.0.0</span>
+<a href="https://github.com/TheThingsNetwork/lorawan-stack" class="github"><i class="fab fa-github"></i></a>
+<p class="description">The best around</p>
+
+</header>
+
+<div class="content-container">
+<main><h1>Configuration</h1>
+  
+
+
+<p>The stack binary can be configured by passing parameters.</p>
+
+<h2 id="default-config">Default config</h2>
+
+<p>The stack can be used for local testing purposes without any additional configuration. To test and use the components to the fullest, you can use the <code>--help</code> flag to show available parameters, and refer to execution logs for recommendations.</p>
+
+<h2 id="sources">Sources</h2>
+
+<h3 id="runtime-flags">Runtime flags</h3>
+
+<p>Example of runtime flags:</p>
+
+<pre><code class="language-bash">$ ttn-lw-stack start \
+  --cluster.keys db114f80fd0ebf2a7b69db7e5a56fce248e53600e256b3a85d5b0ab844bc1aa8 \
+  --http.cookie.hash-key 40847E55ED0CB34B3D491DC557326BF875FCE34EE0C8F50194E1BB3488055FA96D5CC4F3CF6C30C5F4922D8CEB4F72A1FE61317E1A7BC88619617AD6CEA983B3 \
+  --http.cookie.block-key 38E31BCAD8CFC067ABC9F2988967E387E15DF9ADDA14E63F446ED955EEEA4637
+</code></pre>
+
+<h3 id="configuration-files">Configuration files</h3>
+
+<p>You can specify a YAML configuration file with the <code>-c</code> flag. <code>~/.ttn-lw-&lt;binary&gt;.yml</code> is used by default, with the binary type being <code>stack</code> or <code>cli</code>.</p>
+
+<p>Example of a YAML configuration file:</p>
+
+<pre><code class="language-yaml">cluster:
+  keys:
+  - db114f80fd0ebf2a7b69db7e5a56fce248e53600e256b3a85d5b0ab844bc1aa8
+
+http:
+  cookie:
+    hash-key: 40847E55ED0CB34B3D491DC557326BF875FCE34EE0C8F50194E1BB3488055FA96D5CC4F3CF6C30C5F4922D8CEB4F72A1FE61317E1A7BC88619617AD6CEA983B3
+    block-key: 38E31BCAD8CFC067ABC9F2988967E387E15DF9ADDA14E63F446ED955EEEA4637
+</code></pre>
+
+<p>You can then start a binary and pass this config:</p>
+
+<pre><code class="language-bash">$ ./ttn-lw-stack -c config.yml
+</code></pre>
+
+<h3 id="environment-variables">Environment variables</h3>
+
+<p>Environment variables are the uppercased flags, with any separators (<code>.</code> or <code>-</code>) replaced by underscores (<code>_</code>). Environment variables are prefixed with <code>TTN_LW_</code></p>
+
+<p>Example of environment variable as options:</p>
+
+<pre><code class="language-bash">$ export TTN_LW_COOKIE_HASH_KEY=40847E55ED0CB34B3D491DC557326BF875FCE34EE0C8F50194E1BB3488055FA96D5CC4F3CF6C30C5F4922D8CEB4F72A1FE61317E1A7BC88619617AD6CEA983B3
+$ export TTN_LW_LOG_LEVEL=debug
+$ ttn-lw-identity-server start
+</code></pre>
+<div class="edit-meta">Last updated on 27 Mar 2019 / Published on 1 Jan 0001<br><a href="https://github.com/TheThingsNetwork/lorawan-stack/doc/edit/master/content/Administration/config.md" class="edit-page"><i class="fas fa-pen-square"></i> Edit on GitHub</a></div><nav class="pagination"><a class="nav nav-prev" href="/lorawan-stack/v0.1/administration/" title="Administrations"><i class="fas fa-arrow-left" aria-hidden="true"></i> Prev - Administrations</a>
+<a class="nav nav-next" href="/lorawan-stack/v0.1/administration/networking/" title="Network">Next - Network <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+</nav><footer><p class="powered">Powered by <a href="https://gohugo.io">Hugo</a>. Theme by <a href="https://themes.gohugo.io/hugo-theme-techdoc/">TechDoc</a>. Designed by <a href="https://github.com/thingsym/hugo-theme-techdoc">Thingsym</a>.</p>
+</footer>
+</main><div class="sidebar">
+<nav>
+<ul>
+<li class=""><a href="https://sypheos.github.io/lorawan-stack/v0.1/">Home</a></li>
+
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/">Quick Start</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/installation/">Installation</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/start/">Configure &amp; Start</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/manage/">Authenticate &amp; Manage</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/traffic/">Device interaction</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/gettingstarted/integrate/">Integrate</a></li>
+</ul>
+  
+</li>
+
+<li class="parent"><a href="/lorawan-stack/v0.1/administration/">Administrations</a>
+<ul class="sub-menu">
+<li class="active"><a href="/lorawan-stack/v0.1/administration/config/">Configuration</a></li>
+<li class=""><a href="/lorawan-stack/v0.1/administration/networking/">Network</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/components/">Components</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/components/gatewayserver/">Gateway Server</a></li>
+</ul>
+  
+</li>
+
+<li class=""><a href="/lorawan-stack/v0.1/concepts/">Concepts</a>
+<ul class="">
+<li class=""><a href="/lorawan-stack/v0.1/concepts/authentication/">Authentication</a></li>
+</ul>
+  
+</li>
+</ul>
+</nav>
+
+
+<div class="sidebar-footer"></div>
+</div>
+</div><a href="#" id="backtothetop-fixed" class="backtothetop"
+ data-backtothetop-duration="600"
+ data-backtothetop-easing="easeOutQuart"
+ data-backtothetop-fixed-fadeIn="1000"
+ data-backtothetop-fixed-fadeOut="1000"
+ data-backtothetop-fixed-bottom="10"
+ data-backtothetop-fixed-right="20">
+<span class="fa-layers fa-fw">
+<i class="fas fa-circle"></i>
+<i class="fas fa-arrow-circle-up"></i>
+</span></a>
+</div>
+</body>
+</html>

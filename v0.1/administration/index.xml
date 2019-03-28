@@ -2,21 +2,21 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Administrations on LoRaWAN Stack</title>
-    <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/administration/</link>
+    <link>https://sypheos.github.io/lorawan-stack/v0.1/administration/</link>
     <description>Recent content in Administrations on LoRaWAN Stack</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 27 Mar 2019 13:21:29 +0100</lastBuildDate>
     
-	<atom:link href="https://github.com/TheThingsNetwork/lorawan-stack/v0.1/administration/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://sypheos.github.io/lorawan-stack/v0.1/administration/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>Configuration</title>
-      <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/administration/config/</link>
+      <link>https://sypheos.github.io/lorawan-stack/v0.1/administration/config/</link>
       <pubDate>Wed, 27 Mar 2019 13:21:29 +0100</pubDate>
       
-      <guid>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/administration/config/</guid>
+      <guid>https://sypheos.github.io/lorawan-stack/v0.1/administration/config/</guid>
       <description>The stack binary can be configured by passing parameters.
 Default config The stack can be used for local testing purposes without any additional configuration. To test and use the components to the fullest, you can use the --help flag to show available parameters, and refer to execution logs for recommendations.
 Sources Runtime flags Example of runtime flags:
@@ -25,10 +25,10 @@ $ ttn-lw-stack start \ --cluster.keys db114f80fd0ebf2a7b69db7e5a56fce248e53600e2
     
     <item>
       <title>Network</title>
-      <link>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/administration/networking/</link>
+      <link>https://sypheos.github.io/lorawan-stack/v0.1/administration/networking/</link>
       <pubDate>Wed, 27 Mar 2019 13:21:29 +0100</pubDate>
       
-      <guid>https://github.com/TheThingsNetwork/lorawan-stack/v0.1/administration/networking/</guid>
+      <guid>https://sypheos.github.io/lorawan-stack/v0.1/administration/networking/</guid>
       <description> The Things Network Stack Networking The Things Network Stack uses a port per protocol, with a TLS counterpart when applicable. Ports can be shared by multiple services using the same protocol, i.e. gRPC services sharing management, data and events services.
 Port Allocations    Purpose Protocol Authentication Port Port (TLS)     Gateway data Semtech Packet Forwarder None 1700 (UDP) N/A   Gateway data MQTT API key, token 1882 8882   Application data, events MQTT API key, token 1883 8883   Management, data, events gRPC API key, token 1884 8884   Management HTTP API key, token 1885 8885    </description>
     </item>
