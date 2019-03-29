@@ -114,6 +114,10 @@ after_success:
     docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
     snapcraft login --with snap.login
   fi
+- |
+  if [[ "$RUNTYPE" == "doc" ]]; then
+    ./doc/generate-redirect.sh && mv index.html ./doc/public
+  fi
 deploy:
 - provider: script
   skip_cleanup: true
